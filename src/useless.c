@@ -68,7 +68,7 @@ char* randomShortTime() {
   return timeString;
 }
 
-char* stringForTime() {
+char* stringForTime(bool *extraLong) {
 
   srand(time(NULL));
   int n = rand() % 10;
@@ -181,21 +181,47 @@ char* stringForTime() {
     } else if (n2 == 4) {
       char *buffer = calloc(24, sizeof(char));
       strcpy(buffer, "The day after yesterday");
+      *extraLong = true;
       return buffer;
 
     } else if (n2 == 5) {
       char *buffer = calloc(24, sizeof(char));
       strcpy(buffer, "The day before tomorrow");
+      *extraLong = true;
       return buffer;
     }
   }
   return shortTime();
 }
 
+static GRect normalTextRect() {
+  Layer *window_layer = window_get_root_layer(window);
+  GRect bounds = layer_get_bounds(window_layer);
+  return (GRect) { .origin = { 0, 20 }, .size = { bounds.size.w, bounds.size.h } };
+}
+
+static GRect longTextRect() {
+  Layer *window_layer = window_get_root_layer(window);
+  GRect bounds = layer_get_bounds(window_layer);
+  return (GRect) { .origin = { 0, 0 }, .size = { bounds.size.w, bounds.size.h } };
+}
+
+char *currentText = NULL;
 static void update_time() {
-  char *text = stringForTime();
-  text_layer_set_text(text_layer, text);
-  free(text);
+  if (currentText != NULL) {
+    free(currentText);
+  }
+  bool extraLong = false;
+  currentText = stringForTime(&extraLong);
+  text_layer_set_text(text_layer, currentText);
+
+  if (extraLong) {
+    layer_set_frame((Layer*)text_layer, longTextRect());
+    text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
+  } else {
+    layer_set_frame((Layer*)text_layer, normalTextRect());
+    text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
+  }
 }
 
 // Refresh every 59 seconds.
@@ -215,7 +241,7 @@ static void window_load(Window *window) {
 
   window_set_background_color(window, GColorBlack);
 
-  text_layer = text_layer_create((GRect) { .origin = { 0, 20 }, .size = { bounds.size.w, bounds.size.h } });
+  text_layer = text_layer_create(normalTextRect());
   text_layer_set_text(text_layer, "Maybe 12:34");
   text_layer_set_font(text_layer, fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
