@@ -198,8 +198,15 @@ static void update_time() {
   free(text);
 }
 
+// Refresh every 59 seconds.
+// If I reload every minute, the randomness become strange and return 0 more than often,
+// I have to work around by this.
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
-  update_time();
+  int second = (*tick_time).tm_sec;
+  int minute = (*tick_time).tm_min;
+  if ((second + minute * 60) % 59 == 0) {
+    update_time();
+  }
 }
 
 static void window_load(Window *window) {
@@ -240,7 +247,7 @@ int main(void) {
 
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
   // Register with TickTimerService
-  tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
+  tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
   update_time();
 
   app_event_loop();
