@@ -179,7 +179,7 @@ char* stringForTime() {
       return buffer;
       
     } else if (n2 == 4) {
-      char *buffer = calloc(17, sizeof(char));
+      char *buffer = calloc(24, sizeof(char));
       strcpy(buffer, "The day after yesterday");
       return buffer;
 
