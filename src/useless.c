@@ -73,18 +73,19 @@ char* stringForTime(bool *extraLong) {
   srand(time(NULL));
   int n = rand() % 10;
 
+  // 40% chance show "maybe [time]"
   if (n < 4) {
     // Time-related
 
     srand(time(NULL));
-    int n2 = rand() % 3;
+    int n2 = rand() % 4;
     srand(time(NULL));
 
     if (n2 == 0) {
       // Maybe
       char prefix[] = "Maybe ";
       char *timeString = rand() % 2 == 0 ? shortTime() : randomShortTime();
-      char *concat = calloc(strlen(prefix) + strlen(timeString), sizeof(char));
+      char *concat = calloc(strlen(prefix) + strlen(timeString) + 1, sizeof(char));
       strcpy(concat, prefix);
       strcat(concat, timeString);
       free(timeString);
@@ -94,7 +95,7 @@ char* stringForTime(bool *extraLong) {
       // Maybe not
       char prefix[] = "Maybe not ";
       char *timeString = rand() % 2 == 0 ? shortTime() : randomShortTime();
-      char *concat = calloc(strlen(prefix) + strlen(timeString), sizeof(char));
+      char *concat = calloc(strlen(prefix) + strlen(timeString) + 1, sizeof(char));
       strcpy(concat, prefix);
       strcat(concat, timeString);
       free(timeString);
@@ -104,13 +105,23 @@ char* stringForTime(bool *extraLong) {
       // probably
       char prefix[] = "Probably ";
       char *timeString = rand() % 2 == 0 ? shortTime() : randomShortTime();
-      char *concat = calloc(strlen(prefix) + strlen(timeString), sizeof(char));
+      char *concat = calloc(strlen(prefix) + strlen(timeString) + 1, sizeof(char));
       strcpy(concat, prefix);
       strcat(concat, timeString);
       free(timeString);
       return concat;
+    
+    } else if (n2 == 3) {
+      char postfix[] = ", perhaps";
+      char *timeString = rand() % 2 == 0 ? shortTime() : randomShortTime();
+      char *concat = calloc(strlen(postfix) + strlen(timeString) + 1, sizeof(char));
+      strcpy(concat, timeString);
+      strcat(concat, postfix);
+      free(timeString);
+      return concat;
     }
 
+  // 40% chance show "must not be [time]"
   } else if (n < 8) {
     // Wrong time
     char *correctTime = shortTime();
@@ -154,7 +165,8 @@ char* stringForTime(bool *extraLong) {
     }
 
   } else if (n < 10) {
-    // Rubbish
+    // 20% Chance show rubbish
+
     srand(time(NULL));
     int n2 = rand() % 6;
 
@@ -235,7 +247,8 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   }
 }
 
-static void window_load(Window *window) {
+static void window_load(Window *_window) {
+  window = _window;
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
